@@ -2,8 +2,17 @@
   <head>
     <script src="https://drive.google.com/uc?export=view&id=1-B0y5hSp-jIdsv85mlDz575CXgUd7VYQ">
     </script>
+    <script>
+      function init() {
+      }
+      
+      function search(searchText) {
+        console.log(searchText);
+      }
+    </script>
   </head>
-  <body>
-    Test
+  <body onload="init()">
+    <input type="text" id="searchText"/><input type="button" onclick="search(document.getElementById('searchText').value)"/><br/>
+    <div id="results" />
   </body>
 </html>
