@@ -34,7 +34,7 @@
         for(var idxObject = 0; idxObject < data.objects.length; idxObject++) {
 			var obj = data.objects[idxObject];
 			if (obj.class != null && obj.class.toLowerCase().indexOf(searchText) > -1) {
-				results.innerHTML = results.innerHTML + "<li>" + '<a href="#" onclick="openObject(' + idxObject + ')">' + obj.class + ":" + idxObject + '<div class="objDetails closed" id="obj' + idxObject + '"></div></a></li>';
+				results.innerHTML = results.innerHTML + "<li>" + '<a href="#" onclick="openObject(' + idxObject + ')">' + obj.class + ":" + obj.id + '</a><div class="objDetails closed" id="obj' + idxObject + '"></div></li>';
 			}
 		}
 		if (results.innerHTML == "") {
@@ -71,14 +71,27 @@
 			}
 			if (itemIDs == null) {
 				objectDiv.innerHTML = "Inventory items not found";
+				return;
 			}
 			if (itemIDs.length == 0) {
 				objectDiv.innerHTML = "Empty";
+				return;
 			}
 			for (var idxItem = 0; idxItem < itemIDs.length; idxItem++) {
 				var item = data.objects[gIDIndex[itemIDs[idxItem]]];
-				objectDiv.innerHTML = objectDiv.innerHTML + item.class + "<br />";
+				var qty = -1;
+				if (item.properties != null) {
+					for (var idxProperty = 0; idxProperty < item.properties.length; idxProperty++) {
+						if (item.properties[idxProperty].name == "ItemQuantity") {
+							qty = item.properties[idxProperty].value;
+						}						
+					}
+				}
+				if (qty > -1) {
+					objectDiv.innerHTML = "<li>" + objectDiv.innerHTML + item.class + ": " + qty + "</li>";
+				}
 			}
+			objectDiv.innerHTML = "<ul>" + objectDiv.innerHTML + "</ul>";
 		} catch (ex) {
 			objectDiv.innerHTML = "Error retrieving inventory: " + ex;
 		}
