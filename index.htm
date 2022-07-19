@@ -1,18 +1,98 @@
 <html>
   <head>
+	<style>
+		.objDetails {
+		}
+		
+		.open {
+			display: block;
+		}
+		
+		.closed {
+			display: none;
+		}
+		
+	</style>
     <script src="https://drive.google.com/uc?export=view&id=1-B0y5hSp-jIdsv85mlDz575CXgUd7VYQ">
     </script>
     <script>
+	
+	  var gIDIndex = {};
       function init() {
+	  
+	    log("Indexing by ID");
+        for(var idxObject = 0; idxObject < data.objects.length; idxObject++) {
+			gIDIndex[data.objects[idxObject].id] = idxObject;
+		}
+	    log("Completed indexing by ID");
       }
       
       function search(searchText) {
-        console.log(searchText);
+		searchText = searchText.toLowerCase();
+		var results = document.getElementById("results");
+		results.innerHTML = "";
+        for(var idxObject = 0; idxObject < data.objects.length; idxObject++) {
+			var obj = data.objects[idxObject];
+			if (obj.class != null && obj.class.toLowerCase().indexOf(searchText) > -1) {
+				results.innerHTML = results.innerHTML + "<li>" + '<a href="#" onclick="openObject(' + idxObject + ')">' + obj.class + ":" + idxObject + '<div class="objDetails closed" id="obj' + idxObject + '"></div></a></li>';
+			}
+		}
+		if (results.innerHTML == "") {
+			results.innerHTML = "No results found";
+		} else {
+			results.innerHTML = "<ul>" + results.innerHTML + "</ul>";
+		}
       }
+	  
+	  function openObject(id) {
+		var objectDiv = document.getElementById("obj" + id);
+		try {
+			var obj = data.objects[id];
+			objectDiv.classList.remove("closed");
+			objectDiv.classList.add("open");
+			var inventoryID = null;
+			for (var idxProperty = 0; idxProperty < obj.properties.length; idxProperty++) {
+				if (obj.properties[idxProperty] != null && obj.properties[idxProperty].name == "MyInventoryComponent") {
+					inventoryID = obj.properties[idxProperty].value;
+					break;
+				}
+			}
+			if (inventoryID == null) {
+				objectDiv.innerHTML = "Inventory not found";
+				return;
+			}
+			
+			var inventory = data.objects[gIDIndex[inventoryID]];
+			var itemIDs = null;
+			for (var idxProperty = 0; idxProperty < inventory.properties.length; idxProperty++) {
+				if (inventory.properties[idxProperty].name == "InventoryItems") {
+					itemIDs = inventory.properties[idxProperty].value;
+				}
+			}
+			if (itemIDs == null) {
+				objectDiv.innerHTML = "Inventory items not found";
+			}
+			if (itemIDs.length == 0) {
+				objectDiv.innerHTML = "Empty";
+			}
+			for (var idxItem = 0; idxItem < itemIDs.length; idxItem++) {
+				var item = data.objects[gIDIndex[itemIDs[idxItem]]];
+				objectDiv.innerHTML = objectDiv.innerHTML + item.class + "<br />";
+			}
+		} catch (ex) {
+			objectDiv.innerHTML = "Error retrieving inventory: " + ex;
+		}
+	  }
+	  
+	  function log(message) {
+		console.log(message);
+	  }
     </script>
   </head>
   <body onload="init()">
-    <input type="text" id="searchText"/><input type="button" onclick="search(document.getElementById('searchText').value)"/><br/>
+	<form onsubmit="search(document.getElementById('searchText').value); return false;">
+		<input type="text" id="searchText"/>&nbsp;<input type="button" value="search" onclick="search(document.getElementById('searchText').value)"/><br/>
+	</form>
     <div id="results" />
   </body>
 </html>
